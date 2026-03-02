@@ -91,24 +91,29 @@ jobs:
         GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx2048m -XX:MaxPermSize=512m"
       run: |
         if [ -f "gradlew" ]; then
-          ./gradlew assembleDebug --stacktrace --no-daemon --refresh-dependencies -x test || echo "Build failed"
+          ./gradlew assembleDebug --stacktrace --no-daemon --refresh-dependencies -x test
         elif [ -f "android/gradlew" ]; then
-          cd android && ./gradlew assembleDebug --stacktrace --no-daemon --refresh-dependencies -x test || echo "Build failed"
+          cd android && ./gradlew assembleDebug --stacktrace --no-daemon --refresh-dependencies -x test
         else
           echo "No gradlew found for build"
-          # 尝试使用npx expo build
-          npx expo build:android --no-wait --profile preview || echo "Expo build failed"
+          exit 1
         fi
 
-    - name: Find APK
+    - name: Verify APK exists
       run: |
-        echo "=== Find APK ==="
-        find . -name "*.apk" 2>/dev/null || echo "No APK found"
+        echo "=== Check APK ==="
+        if [ -f "android/app/build/outputs/apk/debug/app-debug.apk" ]; then
+          echo "APK found at android/app/build/outputs/apk/debug/app-debug.apk"
+          ls -la android/app/build/outputs/apk/debug/
+        else
+          echo "APK not found, checking all directories"
+          find . -name "*.apk" 2>/dev/null
+          exit 1
+        fi
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: app-debug-apk
-        path: |
-          **/*.apk
-          android/app/build/outputs/apk/debug/app-debug.apk
+        path: android/app/build/outputs/apk/debug/app-debug.apk
+        if-no-files-found: error

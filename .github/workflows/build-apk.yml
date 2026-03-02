@@ -54,9 +54,9 @@ jobs:
         fi
 
     - name: Debug build environment
+      working-directory: android
       run: |
         echo "=== Debug Info ==="
-        cd android
         ls -la
         echo "Gradle version:"
         if [ -f "gradlew" ]; then
@@ -68,8 +68,8 @@ jobs:
         java -version
 
     - name: Clean build
+      working-directory: android
       run: |
-        cd android
         if [ -f "gradlew" ]; then
           ./gradlew clean --stacktrace
         else
@@ -77,10 +77,10 @@ jobs:
         fi
 
     - name: Build APK
+      working-directory: android
       env:
         GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx2048m -XX:MaxPermSize=512m"
       run: |
-        cd android
         if [ -f "gradlew" ]; then
           ./gradlew assembleDebug --stacktrace --no-daemon --refresh-dependencies -x test
         else

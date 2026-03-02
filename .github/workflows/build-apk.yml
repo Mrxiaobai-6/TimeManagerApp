@@ -43,15 +43,24 @@ jobs:
         sdkmanager "platforms;android-33" "build-tools;33.0.0"
         sdkmanager "platforms;android-30" "build-tools;30.0.3"
 
-    - name: Make gradlew executable
+    - name: Check gradlew exists
       run: |
-        cd android
-        chmod +x gradlew
+        if [ -f "android/gradlew" ]; then
+          echo "gradlew found"
+          cd android
+          chmod +x gradlew
+        else
+          echo "gradlew not found, using gradle wrapper"
+        fi
 
     - name: Build APK
       run: |
         cd android
-        ./gradlew assembleDebug --stacktrace
+        if [ -f "gradlew" ]; then
+          ./gradlew assembleDebug --stacktrace
+        else
+          gradle assembleDebug --stacktrace
+        fi
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
